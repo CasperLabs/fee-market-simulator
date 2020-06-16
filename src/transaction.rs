@@ -1,8 +1,10 @@
 // use std::collections::BTreeMap;
-use sorted_list::SortedList;
+use crate::sorted_list::SortedList;
 
 static mut TX_COUNTER: u64 = 0;
 
+#[derive(Clone)]
+#[derive(Debug)]
 pub struct Transaction {
     pub id: u64,
     pub gas_used: u64,

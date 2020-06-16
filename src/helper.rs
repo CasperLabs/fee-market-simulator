@@ -1,4 +1,5 @@
 use ordered_float::OrderedFloat;
+// use sorted_list::SortedList;
 
 pub struct LinearInterpolator {
     X: Vec<f64>,
@@ -60,4 +61,43 @@ impl LinearInterpolator {
 //         }
 //     }
 //     Y[idx] + (Y[idx + 1] - Y[idx]) / (X[idx + 1] - X[idx]) * (a - X[idx])
+// }
+
+// pub trait RemoveElem {
+//     fn remove(&mut self, index: usize);
+// }
+
+
+// impl<K: Ord, V: PartialEq> RemoveElem for SortedList<K, V> {
+//     fn remove(&mut self, index: usize) {
+//         fn assert_failed(index: usize, len: usize) -> ! {
+//             panic!("removal index (is {}) should be < len (is {})", index, len);
+//         }
+
+//         let len = self.keys.len();
+//         if index >= len {
+//             assert_failed(index, len);
+//         }
+
+//         self.keys.remove(index);
+//         self.values.remove(index);
+
+
+//         // unsafe {
+//         //     // infallible
+//         //     let ret;
+//         //     {
+//         //         // the place we are taking from.
+//         //         let ptr = self.as_mut_ptr().add(index);
+//         //         // copy it out, unsafely having a copy of the value on
+//         //         // the stack and in the vector at the same time.
+//         //         ret = ptr::read(ptr);
+
+//         //         // Shift everything down to fill in that spot.
+//         //         ptr::copy(ptr.offset(1), ptr, len - index - 1);
+//         //     }
+//         //     self.set_len(len - 1);
+//         //     ret
+//         // }
+//     }
 // }
