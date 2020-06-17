@@ -1,6 +1,8 @@
+use indicatif::ProgressBar;
+
+use crate::block::Block;
 use crate::demand::DemandCurve;
 use crate::transaction::TransactionPool;
-use crate::block::Block;
 
 pub struct FeeMarketSimulator<'a> {
     demand_curve: DemandCurve,
@@ -24,9 +26,8 @@ pub struct FeeMarketSimulator<'a> {
     n_unincluded_tx_arr: Vec<u64>,
 }
 
-
 impl<'a> FeeMarketSimulator<'_> {
-    fn new_price_adjustment_simulator(
+    pub fn new_price_adjustment_simulator(
         demand_curve: DemandCurve,
         initial_price: u64,
         output_dir: &'a str,
@@ -61,7 +62,25 @@ impl<'a> FeeMarketSimulator<'_> {
         }
     }
 
-    fn run(&mut self, n_user_vec: Vec<u64>) {
+    pub fn run(&mut self, n_user_vec: Vec<u64>) {
+        let bar = ProgressBar::new(n_user_vec.len() as u64);
 
+        let fixed_price = self.initial_price;
+        let control_fullness = 1.;
+        let count = 0;
+
+        for x_ in 0..n_user_vec.len() {
+            let x = x_ as u64;
+            let time = x * self.block_time;
+            let n_user = n_user_vec[x_];
+
+            if x > 0 && x % self.control_range == 0 {
+                // let control_blocks = self.blocks[]
+            }
+
+            bar.inc(1);
+        }
+
+        bar.finish();
     }
 }

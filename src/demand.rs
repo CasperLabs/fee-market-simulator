@@ -1,11 +1,20 @@
+use csv;
+use std::fs::File;
+
 use is_sorted;
 use itertools_num::linspace;
 use ordered_float::OrderedFloat;
-use std::iter::FromIterator;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
+use std::iter::FromIterator;
 
 use crate::helper::*;
+
+struct CsvRecord {
+    p: String,
+    q: u32,
+}
+
 
 pub struct DemandCurve {
     p: Vec<u64>,
@@ -65,7 +74,26 @@ impl DemandCurve {
         }
     }
 
+    pub fn from_csv(path: &str, interp_resolution: u64) -> DemandCurve {
+        let file = File::open(path).expect("Couldn't open input CSV file");
+        let mut reader = csv::ReaderBuilder::new().has_headers(true).from_reader(file);
+
+        let mut p: Vec<u64> = Vec::new();
+        let mut q: Vec<u64> = Vec::new();
+
+        for record in reader.records() {
+            let record = record.unwrap();
+            p.push(record[0].parse().unwrap());
+            q.push(record[1].parse().unwrap());
+        }
+
+        DemandCurve::new(p, q, interp_resolution)
+    }
+
     pub fn sample_price(&mut self, size: usize) -> Vec<u64> {
-        self.Finv_arr.choose_multiple(&mut self.rng, size).cloned().collect()
+        self.Finv_arr
+            .choose_multiple(&mut self.rng, size)
+            .cloned()
+            .collect()
     }
 }

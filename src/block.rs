@@ -6,7 +6,6 @@ pub struct Block {
     gas_limit: u64,
 }
 
-
 impl Block {
     fn new(gas_limit: u64) -> Block {
         Block {
@@ -42,5 +41,4 @@ impl Block {
     fn get_max_price(&self) -> u64 {
         self.txs.iter().map(|x| x.gas_price).max().unwrap()
     }
-
 }

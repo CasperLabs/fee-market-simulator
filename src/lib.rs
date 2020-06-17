@@ -1,11 +1,13 @@
 #![feature(is_sorted)]
 
+pub mod block;
 pub mod demand;
 pub mod helper;
-pub mod transaction;
-pub mod sorted_list;
 pub mod simulator;
-pub mod block;
+pub mod sorted_list;
+pub mod transaction;
+
+pub use crate::simulator::FeeMarketSimulator;
 
 #[cfg(test)]
 mod tests {

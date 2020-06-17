@@ -239,7 +239,6 @@ impl<K: Ord, V: PartialEq> SortedList<K, V> {
         //     ret
         // }
     }
-
 }
 
 impl<K: Ord + Clone, V: PartialEq + Clone> Clone for SortedList<K, V> {

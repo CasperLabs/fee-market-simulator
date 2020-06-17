@@ -21,7 +21,6 @@ fn main() {
         println!("{:?}", i);
     }
 
-
     // println!("{}", a.pool.len());
 
     // let p = vec![0, 1000, 50000, 200000, 400000, 600000, 800000, 1000000];
@@ -29,7 +28,6 @@ fn main() {
     // let mut dc = DemandCurve::new(p, q, 1000);
 
     // println!("{:?}", dc.sample_price(1000));
-
 
     // println!("{}", a.pool.len());
 }

@@ -67,7 +67,6 @@ impl LinearInterpolator {
 //     fn remove(&mut self, index: usize);
 // }
 
-
 // impl<K: Ord, V: PartialEq> RemoveElem for SortedList<K, V> {
 //     fn remove(&mut self, index: usize) {
 //         fn assert_failed(index: usize, len: usize) -> ! {
@@ -81,7 +80,6 @@ impl LinearInterpolator {
 
 //         self.keys.remove(index);
 //         self.values.remove(index);
-
 
 //         // unsafe {
 //         //     // infallible
