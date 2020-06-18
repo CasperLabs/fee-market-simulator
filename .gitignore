@@ -2,3 +2,5 @@
 Cargo.lock
 \#*\#
 profile*.csv
+out/
+out*.csv

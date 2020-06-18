@@ -10,4 +10,4 @@ control_range = 144
 target_fullness = 0.65
 price_adjustment_rate = 0.01
 
-interp_resolution = 5_000
+interp_resolution = 50_000

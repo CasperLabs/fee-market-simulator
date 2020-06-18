@@ -239,6 +239,11 @@ impl<K: Ord, V: PartialEq> SortedList<K, V> {
         //     ret
         // }
     }
+
+    /// Get the value of the element at a given index
+    pub fn get(&self, index: usize) -> &V {
+        &self.values[index]
+    }
 }
 
 impl<K: Ord + Clone, V: PartialEq + Clone> Clone for SortedList<K, V> {

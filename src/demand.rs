@@ -15,12 +15,11 @@ struct CsvRecord {
     q: u32,
 }
 
-
 pub struct DemandCurve {
     p: Vec<u64>,
     q: Vec<u64>,
     interp_resolution: u64,
-    Finv_arr: Vec<u64>,
+    Finv_vec: Vec<u64>,
     rng: ThreadRng,
 }
 
@@ -56,12 +55,12 @@ impl DemandCurve {
 
         let Finv_interp = LinearInterpolator::new(&Q_val, &P_int);
 
-        let Finv_arr_f64: Vec<f64> = X.map(|x| Finv_interp.interpolate(x)).collect();
+        let Finv_vec_f64: Vec<f64> = X.map(|x| Finv_interp.interpolate(x)).collect();
 
-        let Finv_arr = Finv_arr_f64.iter().map(|&x| x as u64).collect();
+        let Finv_vec = Finv_vec_f64.iter().map(|&x| x as u64).collect();
         // println!("{:?}", Q_val);
         // println!("{:?}", P_int);
-        // println!("{:?}", Finv_arr);
+        // println!("{:?}", Finv_vec);
 
         // let mut rng = &mut rand::thread_rng();
 
@@ -69,14 +68,16 @@ impl DemandCurve {
             p: p,
             q: q,
             interp_resolution: interp_resolution,
-            Finv_arr: Finv_arr,
+            Finv_vec: Finv_vec,
             rng: rand::thread_rng(),
         }
     }
 
     pub fn from_csv(path: &str, interp_resolution: u64) -> DemandCurve {
         let file = File::open(path).expect("Couldn't open input CSV file");
-        let mut reader = csv::ReaderBuilder::new().has_headers(true).from_reader(file);
+        let mut reader = csv::ReaderBuilder::new()
+            .has_headers(true)
+            .from_reader(file);
 
         let mut p: Vec<u64> = Vec::new();
         let mut q: Vec<u64> = Vec::new();
@@ -91,9 +92,13 @@ impl DemandCurve {
     }
 
     pub fn sample_price(&mut self, size: usize) -> Vec<u64> {
-        self.Finv_arr
-            .choose_multiple(&mut self.rng, size)
-            .cloned()
-            .collect()
+        // self.Finv_vec
+        //     .choose_multiple(&mut self.rng, size)
+        //     .cloned()
+        //     .collect()
+        let result: Vec<u64> = (0..size)
+            .map(|x| *(self.Finv_vec.choose(&mut self.rng).unwrap()))
+            .collect();
+        result
     }
 }
