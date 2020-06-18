@@ -13,7 +13,6 @@ use crate::transaction::{Transaction, TransactionPool};
 pub struct FeeMarketSimulator {
     demand_curve: DemandCurve,
     initial_price: u64,
-    // output_dir: PathBuf,
     block_gas_limit: u64,
     tx_gas_used: u64,
     block_time: u64,
@@ -22,18 +21,18 @@ pub struct FeeMarketSimulator {
     price_adjustment_rate: f64,
     //
     txpool: TransactionPool,
-    time_vec: Vec<u64>,
-    n_user_vec: Vec<u64>,
-    txpool_size_vec: Vec<u64>,
-    txs_sent_vec: Vec<u64>,
     blocks: Vec<Block>,
-    control_fullness_vec: Vec<f64>,
-    fixed_price_vec: Vec<u64>,
-    n_unincluded_tx_vec: Vec<u64>,
+    // time_vec: Vec<u64>,
+    // n_user_vec: Vec<u64>,
+    // txpool_size_vec: Vec<u64>,
+    // txs_sent_vec: Vec<u64>,
+    // control_fullness_vec: Vec<f64>,
+    // fixed_price_vec: Vec<u64>,
+    // n_unincluded_tx_vec: Vec<u64>,
 }
 
 impl FeeMarketSimulator {
-    pub fn new_price_adjustment_simulator(
+    pub fn new_autoprice_simulator(
         demand_curve: DemandCurve,
         initial_price: u64,
         block_gas_limit: u64,
@@ -55,14 +54,14 @@ impl FeeMarketSimulator {
             price_adjustment_rate: price_adjustment_rate,
             //
             txpool: TransactionPool::new(txpool_size),
-            time_vec: Vec::new(),
-            n_user_vec: Vec::new(),
-            txpool_size_vec: Vec::new(),
-            txs_sent_vec: Vec::new(),
             blocks: Vec::new(),
-            control_fullness_vec: Vec::new(),
-            fixed_price_vec: Vec::new(),
-            n_unincluded_tx_vec: Vec::new(),
+            // time_vec: Vec::new(),
+            // n_user_vec: Vec::new(),
+            // txpool_size_vec: Vec::new(),
+            // txs_sent_vec: Vec::new(),
+            // control_fullness_vec: Vec::new(),
+            // fixed_price_vec: Vec::new(),
+            // n_unincluded_tx_vec: Vec::new(),
         }
     }
 
@@ -95,8 +94,8 @@ impl FeeMarketSimulator {
                     .take(self.control_range as usize)
                     .collect();
 
-                let control_gas_used: u64 = control_blocks.iter().map(|&b| b.get_gas_used()).sum();
-                let max_gas_used = control_blocks.len() as u64 * self.block_gas_limit;
+                // let control_gas_used: u64 = control_blocks.iter().map(|&b| b.get_gas_used()).sum();
+                // let max_gas_used = control_blocks.len() as u64 * self.block_gas_limit;
                 // control_fullness = control_gas_used as f64 / max_gas_used as f64;
 
                 control_fullness = median(control_blocks.iter().map(|&b| b.get_fullness()))

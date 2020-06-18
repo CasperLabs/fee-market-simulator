@@ -1,6 +1,7 @@
 /target
 Cargo.lock
 \#*\#
-profile*.csv
+demand_profile.csv
 out/
 out*.csv
+generate_demand_profile

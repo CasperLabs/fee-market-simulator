@@ -1,0 +1,12 @@
+initial_price = 350000
+output_dir = "out"
+demand_curve_path = "../demand_curve.csv"
+demand_profile_path = "demand_profile.csv"
+block_gas_limit = 10_000_000
+tx_gas_used = 21_000
+txpool_size = 1_000_000
+block_time = 600
+control_range = 144
+target_fullness = 0.65
+price_adjustment_rate = 0.01
+interp_resolution = 5_000

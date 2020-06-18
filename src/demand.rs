@@ -18,7 +18,6 @@ struct CsvRecord {
 pub struct DemandCurve {
     p: Vec<u64>,
     q: Vec<u64>,
-    interp_resolution: u64,
     Finv_vec: Vec<u64>,
     rng: ThreadRng,
 }
@@ -67,7 +66,6 @@ impl DemandCurve {
         DemandCurve {
             p: p,
             q: q,
-            interp_resolution: interp_resolution,
             Finv_vec: Finv_vec,
             rng: rand::thread_rng(),
         }
