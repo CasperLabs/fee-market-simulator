@@ -1,9 +1,9 @@
-use csv;
+use clap::{App, Arg};
 use config;
+use csv;
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
-use std::collections::HashMap;
-use clap::{App, Arg};
 
 use fee_market_simulator::demand::DemandCurve;
 use fee_market_simulator::FeeMarketSimulator;
@@ -38,7 +38,6 @@ fn main() {
         .get_matches();
 
     let config_path = matches.value_of("config").unwrap();
-
 
     let mut settings_ = config::Config::default();
     settings_

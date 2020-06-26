@@ -31,20 +31,49 @@ impl LinearInterpolator {
     }
 
     pub fn interpolate(&self, a: f64) -> f64 {
-        assert!(self.xmin <= a && a <= self.xmax);
-
         let result: f64 = 0.;
 
-        let mut idx: usize = 0;
-        for i in 0..self.X.len() - 1 {
-            if self.X[i] <= a && a <= self.X[i + 1] {
-                idx = i;
-                break;
-            }
-        }
+        // // Linear search for the index
+        // let mut idx: usize = 0;
+        // for i in 0..self.X.len() - 1 {
+        //     if self.X[i] <= a && a <= self.X[i + 1] {
+        //         idx = i;
+        //         break;
+        //     }
+        // }
+
+        // Binary search for the index
+        let idx = self.lower_bound_index(a);
 
         self.Y[idx]
             + (self.Y[idx + 1] - self.Y[idx]) / (self.X[idx + 1] - self.X[idx]) * (a - self.X[idx])
+    }
+
+    fn lower_bound_index(&self, a: f64) -> usize {
+        /// Uses binary search to find the index of the lower bound for a number in X
+        assert!(self.check_bounds(a));
+        let mut bottom: usize = 0;
+        let mut middle: usize = 0;
+        let mut top: usize = self.X.len() - 1;
+
+        loop {
+            if top == bottom || top - 1 == bottom {
+                break;
+            }
+            middle = ((top + bottom + 1) - (top + bottom + 1) % 2) / 2;
+            // println!("{} {} {}", bottom, middle, top);
+
+            if self.X[bottom] <= a && a < self.X[middle] {
+                top = middle;
+            } else {
+                bottom = middle;
+            }
+        }
+        bottom
+    }
+
+    fn check_bounds(&self, a: f64) -> bool {
+        self.xmin <= a && a <= self.xmax
     }
 }
 
@@ -63,3 +92,23 @@ impl LinearInterpolator {
 //     }
 //     Y[idx] + (Y[idx + 1] - Y[idx]) / (X[idx + 1] - X[idx]) * (a - X[idx])
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::LinearInterpolator;
+    use std::fmt::Debug;
+
+    #[test]
+    fn test_interpolate1() {
+        let interp =
+            LinearInterpolator::new(&vec![0., 1., 2., 4., 8.], &vec![0., 1., 3., 12., 13.]);
+
+        // interp.lower_bound_index(2.);
+
+        assert_eq!(interp.interpolate(0.), 0.);
+        assert_eq!(interp.interpolate(0.5), 0.5);
+        assert_eq!(interp.interpolate(1.), 1.);
+        assert_eq!(interp.interpolate(1.5), 2.);
+        assert_eq!(interp.interpolate(2.), 3.);
+    }
+}
