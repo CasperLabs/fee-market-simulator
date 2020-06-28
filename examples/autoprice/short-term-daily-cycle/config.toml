@@ -1,12 +1,41 @@
-initial_price = 350000
+# Path of the output directory
 output_dir = "out"
+
+# Path of the CSV file containing the demand curve, i.e. price vs quantity
+# The demand curve will be used to derive a probability distribution to generate buyers
 demand_curve_path = "../demand_curve.csv"
+
+# Path of the CSV file containing the number of buyers versus time
 demand_profile_path = "demand_profile.csv"
+
+# (Optional) Give a CSV file containing token price data to
+token_price_path = "../../data/ethusd_hourly.csv"
+
+# Initial fixed price
+initial_price = 35000
+
+# Maximum gas that can be used by transactions in a given block
 block_gas_limit = 10_000_000
+
+# Gas used by a single transaction
 tx_gas_used = 21_000
+
+# Max. number of transactions in the transaction pool
 txpool_size = 1_000_000
+
+# Time between 2 blocks [second]
 block_time = 600
+
+# Frequency at which the adjustment takes place (every $control_range blocks)
 control_range = 144
+
+# Targeted aggregate fullness (pseudocode given below)
+# if median(fullness of last $control_range blocks) <= $target_fullness:
+#     $price = $price * (1 + $price_adjustment_rate)
 target_fullness = 0.65
-price_adjustment_rate = 0.01
+
+# Daily rate at which the price shifts
+price_adjustment_rate = 0.05
+
+# Size of the sample set
 interp_resolution = 5_000

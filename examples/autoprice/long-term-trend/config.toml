@@ -1,7 +1,8 @@
-initial_price = 350000
 output_dir = "out"
 demand_curve_path = "../demand_curve.csv"
 demand_profile_path = "demand_profile.csv"
+token_price_path = "../../data/ethusd_hourly.csv"
+initial_price = 350000
 block_gas_limit = 10_000_000
 tx_gas_used = 21_000
 txpool_size = 1_000_000
