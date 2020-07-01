@@ -5,25 +5,34 @@ static mut TX_COUNTER: u64 = 0;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Transaction {
-    pub id: u64,
-    pub gas_used: u64,
-    pub gas_price: u64,
+    id: u64,
+    gas_used: u64,
+    gas_price: u64,
 }
 
 impl Transaction {
     pub fn new(gas_used: u64, gas_price: u64) -> Transaction {
         unsafe {
             let result = Transaction {
-                gas_used: gas_used,
-                gas_price: gas_price,
+                gas_used,
+                gas_price,
                 id: TX_COUNTER,
             };
             TX_COUNTER += 1;
             return result;
         }
     }
-    fn get_fee(&self) -> u64 {
+
+    pub fn fee(&self) -> u64 {
         self.gas_used * self.gas_price
+    }
+
+    pub fn gas_used(&self) -> u64 {
+        self.gas_used
+    }
+
+    pub fn gas_price(&self) -> u64 {
+        self.gas_price
     }
 }
 
@@ -34,7 +43,7 @@ impl PartialEq for Transaction {
 }
 
 pub struct TransactionPool {
-    pub pool: SortedList<u64, Transaction>,
+    pool: SortedList<u64, Transaction>,
     limit: usize,
 }
 
@@ -42,7 +51,7 @@ impl TransactionPool {
     pub fn new(limit: usize) -> TransactionPool {
         TransactionPool {
             pool: SortedList::new(),
-            limit: limit,
+            limit,
         }
     }
 

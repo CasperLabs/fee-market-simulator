@@ -16,13 +16,12 @@ fn read_demand_profile(path: &str) -> Vec<u64> {
         .has_headers(false)
         .from_reader(file);
 
-    let mut result: Vec<u64> = Vec::new();
-
-    for record in reader.records() {
-        let record = record.unwrap();
-        result.push(record[0].parse().unwrap());
-    }
-    result
+    reader.records()
+        .map(|record| {
+            let record = record.unwrap();
+            record[0].parse::<u64>().unwrap()
+        })
+        .collect()
 }
 
 fn main() {

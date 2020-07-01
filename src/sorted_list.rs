@@ -17,7 +17,7 @@ use std::iter::FromIterator;
 /// # Example
 ///
 /// ```
-/// use sorted_list::SortedList;
+/// use fee_market_simulator::sorted_list::SortedList;
 ///
 /// let mut list: SortedList<u32, u8> = SortedList::new();
 /// list.insert(0, 0);

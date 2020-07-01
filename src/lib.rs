@@ -1,5 +1,3 @@
-#![feature(is_sorted)]
-
 pub mod block;
 pub mod demand;
 pub mod helper;

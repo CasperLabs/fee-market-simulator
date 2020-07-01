@@ -18,31 +18,31 @@ impl Block {
         self.txs.extend(txs.iter().cloned())
     }
 
-    pub fn get_gas_used(&self) -> u64 {
-        self.txs.iter().map(|x| x.gas_used).sum()
+    pub fn gas_used(&self) -> u64 {
+        self.txs.iter().map(Transaction::gas_used).sum()
     }
 
-    pub fn get_fullness(&self) -> f64 {
-        self.get_gas_used() as f64 / self.gas_limit as f64
+    pub fn fullness(&self) -> f64 {
+        self.gas_used() as f64 / self.gas_limit as f64
     }
 
-    pub fn get_median_price(&self) -> u64 {
-        median(self.txs.iter().map(|x| x.gas_price)).unwrap() as u64
+    pub fn median_price(&self) -> u64 {
+        median(self.txs.iter().map(Transaction::gas_price)).unwrap() as u64
     }
 
-    pub fn get_mean_price(&self) -> u64 {
-        mean(self.txs.iter().map(|x| x.gas_price)) as u64
+    pub fn mean_price(&self) -> u64 {
+        mean(self.txs.iter().map(Transaction::gas_price)) as u64
     }
 
-    pub fn get_min_price(&self) -> u64 {
-        self.txs.iter().map(|x| x.gas_price).min().unwrap()
+    pub fn min_price(&self) -> u64 {
+        self.txs.iter().map(Transaction::gas_price).min().unwrap()
     }
 
-    pub fn get_max_price(&self) -> u64 {
-        self.txs.iter().map(|x| x.gas_price).max().unwrap()
+    pub fn max_price(&self) -> u64 {
+        self.txs.iter().map(Transaction::gas_price).max().unwrap()
     }
 
-    pub fn get_n_tx(&self) -> u64 {
+    pub fn tx_count(&self) -> u64 {
         self.txs.len() as u64
     }
 }

@@ -1,19 +1,14 @@
 use csv;
 use std::fs::File;
 
-use is_sorted;
+use is_sorted::IsSorted;
 use itertools_num::linspace;
 use ordered_float::OrderedFloat;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
-use std::iter::FromIterator;
+use std::iter::{self, FromIterator};
 
 use crate::helper::*;
-
-// struct CsvRecord {
-//     price: String,
-//     quantity: u32,
-// }
 
 pub struct DemandCurve {
     price: Vec<u64>,
@@ -24,11 +19,11 @@ pub struct DemandCurve {
 
 impl DemandCurve {
     pub fn new(price: Vec<u64>, quantity: Vec<u64>, interp_resolution: u64) -> DemandCurve {
-        if !price.is_sorted() {
+        if !IsSorted::is_sorted(&mut price.iter()) {
             panic!("Input price vector must be sorted in increasing order");
         }
 
-        if quantity.last().unwrap().clone() != 0 {
+        if quantity.last().unwrap() != &0 {
             panic!("Input quantity vector must have 0 as the last element");
         }
 
@@ -63,10 +58,6 @@ impl DemandCurve {
 
         let inverse_transform: Vec<u64> = X.map(|x| interpolator2.interpolate(x) as u64).collect();
 
-        // println!("{:?}", quantity_interp);
-        // println!("{:?}", price_interp);
-        // println!("{:?}", inverse_transform);
-
         DemandCurve {
             price: price,
             quantity: quantity,
@@ -81,26 +72,23 @@ impl DemandCurve {
             .has_headers(true)
             .from_reader(file);
 
-        let mut price: Vec<u64> = Vec::new();
-        let mut quantity: Vec<u64> = Vec::new();
-
-        for record in reader.records() {
-            let record = record.unwrap();
-            price.push(record[0].parse().unwrap());
-            quantity.push(record[1].parse().unwrap());
-        }
+        let (price, quantity): (Vec<_>, Vec<_>) = reader
+            .records()
+            .map(|record| {
+                let record = record.unwrap();
+                (
+                    record[0].parse::<u64>().unwrap(),
+                    record[1].parse::<u64>().unwrap(),
+                )
+            })
+            .unzip();
 
         DemandCurve::new(price, quantity, interp_resolution)
     }
 
     pub fn sample_price(&mut self, size: usize) -> Vec<u64> {
-        // self.inverse_transform
-        //     .choose_multiple(&mut self.rng, size)
-        //     .cloned()
-        //     .collect()
-        let result: Vec<u64> = (0..size)
-            .map(|x| *(self.inverse_transform.choose(&mut self.rng).unwrap()))
-            .collect();
-        result
+        iter::repeat_with(|| *(self.inverse_transform.choose(&mut self.rng).unwrap()))
+            .take(size)
+            .collect()
     }
 }
