@@ -9,7 +9,7 @@ demand_curve_path = "../demand_curve.csv"
 demand_profile_path = "demand_profile.csv"
 
 # Initial fixed price
-initial_price = 35000
+initial_price = 350000
 
 # Maximum gas that can be used by transactions in a given block
 block_gas_limit = 10_000_000

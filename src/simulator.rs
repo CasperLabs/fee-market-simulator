@@ -1,10 +1,10 @@
 use indicatif::ProgressBar;
-use stats::{mean, median};
-use std::env::{current_dir, join_paths};
+use stats::median;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
+use std::iter;
 
 use crate::block::Block;
 use crate::demand::DemandCurve;
@@ -21,16 +21,8 @@ pub struct FeeMarketSimulator {
     control_range: u64,
     target_fullness: f64,
     price_adjustment_rate: f64,
-    //
     txpool: TransactionPool,
     blocks: Vec<Block>,
-    // time_vec: Vec<u64>,
-    // n_user_vec: Vec<u64>,
-    // txpool_size_vec: Vec<u64>,
-    // txs_sent_vec: Vec<u64>,
-    // control_fullness_vec: Vec<f64>,
-    // fixed_gas_price_vec: Vec<u64>,
-    // n_unincluded_tx_vec: Vec<u64>,
 }
 
 impl FeeMarketSimulator {
@@ -47,25 +39,17 @@ impl FeeMarketSimulator {
         price_adjustment_rate: f64,
     ) -> FeeMarketSimulator {
         FeeMarketSimulator {
-            demand_curve: demand_curve,
-            token_price: token_price,
-            initial_price: initial_price,
-            block_gas_limit: block_gas_limit,
-            tx_gas_used: tx_gas_used,
-            block_time: block_time,
-            control_range: control_range,
-            target_fullness: target_fullness,
-            price_adjustment_rate: price_adjustment_rate,
-            //
+            demand_curve,
+            token_price,
+            initial_price,
+            block_gas_limit,
+            tx_gas_used,
+            block_time,
+            control_range,
+            target_fullness,
+            price_adjustment_rate,
             txpool: TransactionPool::new(txpool_size),
             blocks: Vec::new(),
-            // time_vec: Vec::new(),
-            // n_user_vec: Vec::new(),
-            // txpool_size_vec: Vec::new(),
-            // txs_sent_vec: Vec::new(),
-            // control_fullness_vec: Vec::new(),
-            // fixed_gas_price_vec: Vec::new(),
-            // n_unincluded_tx_vec: Vec::new(),
         }
     }
 
@@ -73,7 +57,7 @@ impl FeeMarketSimulator {
         let mut output_csv_path = output_dir.clone();
         output_csv_path.push("out.csv");
 
-        fs::create_dir_all(output_dir).expect("Could not create the output directory");
+        let _ = fs::create_dir_all(output_dir).expect("Could not create the output directory");
 
         let mut output_csv_file = File::create(output_csv_path).unwrap();
 
@@ -98,11 +82,11 @@ impl FeeMarketSimulator {
                     .take(self.control_range as usize)
                     .collect();
 
-                // let control_gas_used: u64 = control_blocks.iter().map(|&b| b.get_gas_used()).sum();
+                // let control_gas_used: u64 = control_blocks.iter().map(|&b| b.gas_used()).sum();
                 // let max_gas_used = control_blocks.len() as u64 * self.block_gas_limit;
                 // control_fullness = control_gas_used as f64 / max_gas_used as f64;
 
-                control_fullness = median(control_blocks.iter().map(|&b| b.get_fullness()))
+                control_fullness = median(control_blocks.into_iter().map(Block::fullness))
                     .expect("No blocks in the control range");
 
                 let increase = control_fullness > self.target_fullness;
@@ -127,9 +111,9 @@ impl FeeMarketSimulator {
             let n_sent_tx: u64 = match &self.token_price {
                 Some(interp) => {
                     // println!("{}", time);
-                    let relative_time = interp.get_xmin() + time as f64;
+                    let relative_time = interp.xmin() + time as f64;
 
-                    if relative_time > interp.get_xmax() {
+                    if relative_time > interp.xmax() {
                         println!("Token price data not large enough to cover the whole simulation, exiting...");
                         break;
                     }
@@ -144,19 +128,20 @@ impl FeeMarketSimulator {
                 None => wtp_vec.iter().filter(|&&x| x >= fixed_gas_price).count() as u64,
             };
 
-            let txs = (0..n_sent_tx)
-                .map(|x| Transaction::new(self.tx_gas_used, fixed_gas_price))
-                .collect();
+            // let txs = iter::repeat(Transaction::new(self.tx_gas_used, fixed_gas_price))
+            //     .take(n_sent_tx as usize)
+            //     .collect();
+
+            let txs = (0..n_sent_tx).map(|x| Transaction::new(self.tx_gas_used, fixed_gas_price)).collect();
 
             self.txpool.add_txs(txs);
-            // println!("{}", n_sent_tx);
 
             let included_txs = self.txpool.pop_most_valuable_txs(self.block_gas_limit);
 
             let mut new_block = Block::new(self.block_gas_limit);
             new_block.add_txs(included_txs);
 
-            let n_included_tx = new_block.get_n_tx();
+            let n_included_tx = new_block.tx_count();
             let n_unincluded_tx = n_sent_tx.saturating_sub(n_included_tx);
 
             self.blocks.push(new_block);
