@@ -8,6 +8,9 @@ demand_curve_path = "../demand_curve.csv"
 # Path of the CSV file containing the number of buyers versus time
 demand_profile_path = "demand_profile.csv"
 
+# (Optional) Give a CSV file containing token price data to
+token_price_path = "../../data/ethusd_hourly.csv"
+
 # Initial fixed price
 initial_price = 35000
 
@@ -32,7 +35,7 @@ control_range = 144
 target_fullness = 0.65
 
 # Daily rate at which the price shifts
-price_adjustment_rate = 0.01
+price_adjustment_rate = 0.05
 
 # Size of the sample set
 interp_resolution = 5_000
