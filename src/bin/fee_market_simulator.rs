@@ -1,11 +1,13 @@
 use clap::{App, Arg};
 use config;
 use csv;
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
 use fee_market_simulator::demand::DemandCurve;
+use fee_market_simulator::helper::LinearInterpolator;
 use fee_market_simulator::FeeMarketSimulator;
 
 fn read_demand_profile(path: &str) -> Vec<u64> {
@@ -44,7 +46,7 @@ fn main() {
         .merge(config::File::with_name(config_path))
         .unwrap();
 
-    let settings = settings_.try_into::<HashMap<String, String>>().unwrap();
+    let mut settings = settings_.try_into::<HashMap<String, String>>().unwrap();
 
     let mut root_dir = PathBuf::from(&config_path);
     root_dir = root_dir.parent().unwrap().to_path_buf();
@@ -63,8 +65,35 @@ fn main() {
         settings["interp_resolution"].parse().unwrap(),
     );
 
+    let token_price: Option<LinearInterpolator> =
+        match settings.entry("token_price_path".to_string()) {
+            Entry::Occupied(o) => {
+                let mut token_price_path = root_dir.clone();
+                token_price_path.push(o.get());
+                let file = File::open(token_price_path)
+                    .expect(&format!("Couldn't open input CSV file {}", o.get()));
+
+                let mut reader = csv::ReaderBuilder::new()
+                    .has_headers(true)
+                    .from_reader(file);
+
+                let mut time: Vec<f64> = Vec::new();
+                let mut price: Vec<f64> = Vec::new();
+
+                for record in reader.records() {
+                    let record = record.unwrap();
+                    time.push(record[0].parse().unwrap());
+                    price.push(record[1].parse().unwrap());
+                }
+
+                Some(LinearInterpolator::new(&time, &price))
+            }
+            Entry::Vacant(_v) => None,
+        };
+
     let mut sim = FeeMarketSimulator::new_autoprice_simulator(
         dc,
+        token_price,
         settings["initial_price"].parse().unwrap(),
         settings["block_gas_limit"].parse().unwrap(),
         settings["tx_gas_used"].parse().unwrap(),

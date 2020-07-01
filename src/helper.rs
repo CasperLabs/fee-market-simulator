@@ -49,8 +49,8 @@ impl LinearInterpolator {
             + (self.Y[idx + 1] - self.Y[idx]) / (self.X[idx + 1] - self.X[idx]) * (a - self.X[idx])
     }
 
+    /// Uses binary search to find the index of the lower bound for a number in X
     fn lower_bound_index(&self, a: f64) -> usize {
-        /// Uses binary search to find the index of the lower bound for a number in X
         assert!(self.check_bounds(a));
         let mut bottom: usize = 0;
         let mut middle: usize = 0;
@@ -74,6 +74,14 @@ impl LinearInterpolator {
 
     fn check_bounds(&self, a: f64) -> bool {
         self.xmin <= a && a <= self.xmax
+    }
+
+    pub fn get_xmin(&self) -> f64 {
+        self.xmin
+    }
+
+    pub fn get_xmax(&self) -> f64 {
+        self.xmax
     }
 }
 

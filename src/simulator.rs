@@ -8,10 +8,12 @@ use std::path::PathBuf;
 
 use crate::block::Block;
 use crate::demand::DemandCurve;
+use crate::helper::LinearInterpolator;
 use crate::transaction::{Transaction, TransactionPool};
 
 pub struct FeeMarketSimulator {
     demand_curve: DemandCurve,
+    token_price: Option<LinearInterpolator>,
     initial_price: u64,
     block_gas_limit: u64,
     tx_gas_used: u64,
@@ -27,13 +29,14 @@ pub struct FeeMarketSimulator {
     // txpool_size_vec: Vec<u64>,
     // txs_sent_vec: Vec<u64>,
     // control_fullness_vec: Vec<f64>,
-    // fixed_price_vec: Vec<u64>,
+    // fixed_gas_price_vec: Vec<u64>,
     // n_unincluded_tx_vec: Vec<u64>,
 }
 
 impl FeeMarketSimulator {
     pub fn new_autoprice_simulator(
         demand_curve: DemandCurve,
+        token_price: Option<LinearInterpolator>,
         initial_price: u64,
         block_gas_limit: u64,
         tx_gas_used: u64,
@@ -45,6 +48,7 @@ impl FeeMarketSimulator {
     ) -> FeeMarketSimulator {
         FeeMarketSimulator {
             demand_curve: demand_curve,
+            token_price: token_price,
             initial_price: initial_price,
             block_gas_limit: block_gas_limit,
             tx_gas_used: tx_gas_used,
@@ -60,7 +64,7 @@ impl FeeMarketSimulator {
             // txpool_size_vec: Vec::new(),
             // txs_sent_vec: Vec::new(),
             // control_fullness_vec: Vec::new(),
-            // fixed_price_vec: Vec::new(),
+            // fixed_gas_price_vec: Vec::new(),
             // n_unincluded_tx_vec: Vec::new(),
         }
     }
@@ -69,15 +73,15 @@ impl FeeMarketSimulator {
         let mut output_csv_path = output_dir.clone();
         output_csv_path.push("out.csv");
 
-        fs::create_dir_all(output_dir);
+        fs::create_dir_all(output_dir).expect("Could not create the output directory");
 
         let mut output_csv_file = File::create(output_csv_path).unwrap();
 
-        output_csv_file.write_all("height,time,n_user,n_sent_tx,n_included_tx,n_unincluded_tx,txpool_size,control_fullness,fixed_price\n".as_bytes()).unwrap();
+        output_csv_file.write_all("height,time,n_user,n_sent_tx,n_included_tx,n_unincluded_tx,txpool_size,control_fullness,token_price,fixed_gas_price\n".as_bytes()).unwrap();
 
         let bar = ProgressBar::new(n_user_vec.len() as u64);
 
-        let mut fixed_price: u64 = self.initial_price;
+        let mut fixed_gas_price: u64 = self.initial_price;
         let count = 0;
         let mut control_fullness: f64 = 0.;
 
@@ -104,20 +108,44 @@ impl FeeMarketSimulator {
                 let increase = control_fullness > self.target_fullness;
 
                 if increase {
-                    fixed_price = (fixed_price as f64 * (1. + self.price_adjustment_rate)) as u64;
+                    fixed_gas_price =
+                        (fixed_gas_price as f64 * (1. + self.price_adjustment_rate)) as u64;
                 } else {
-                    fixed_price = (fixed_price as f64 / (1. + self.price_adjustment_rate)) as u64;
+                    fixed_gas_price =
+                        (fixed_gas_price as f64 / (1. + self.price_adjustment_rate)) as u64;
                 }
 
-                // println!("{} {}", fixed_price, control_fullness);
+                // println!("{} {}", fixed_gas_price, control_fullness);
             }
 
             let wtp_vec = self.demand_curve.sample_price(n_user as usize);
 
             // println!("{} {}", n_user, wtp_vec.len());
-            let n_sent_tx = wtp_vec.iter().filter(|&&x| x >= fixed_price).count() as u64;
+
+            let mut current_token_price: f64 = 1.;
+
+            let n_sent_tx: u64 = match &self.token_price {
+                Some(interp) => {
+                    // println!("{}", time);
+                    let relative_time = interp.get_xmin() + time as f64;
+
+                    if relative_time > interp.get_xmax() {
+                        println!("Token price data not large enough to cover the whole simulation, exiting...");
+                        break;
+                    }
+                    // token/fiat * gas/token = gas/fiat
+                    current_token_price = interp.interpolate(relative_time);
+
+                    wtp_vec
+                        .iter()
+                        .filter(|&&x| x as f64 >= fixed_gas_price as f64 * current_token_price)
+                        .count() as u64
+                }
+                None => wtp_vec.iter().filter(|&&x| x >= fixed_gas_price).count() as u64,
+            };
+
             let txs = (0..n_sent_tx)
-                .map(|x| Transaction::new(self.tx_gas_used, fixed_price))
+                .map(|x| Transaction::new(self.tx_gas_used, fixed_gas_price))
                 .collect();
 
             self.txpool.add_txs(txs);
@@ -136,7 +164,7 @@ impl FeeMarketSimulator {
             output_csv_file
                 .write_all(
                     format!(
-                        "{},{},{},{},{},{},{},{},{}\n",
+                        "{},{},{},{},{},{},{},{},{},{}\n",
                         x,
                         x * self.block_time,
                         n_user,             // number of users in the market
@@ -145,7 +173,8 @@ impl FeeMarketSimulator {
                         n_unincluded_tx, // number of transactions sent but not included in the block
                         self.txpool.size(), // size of the transaction pool
                         control_fullness,
-                        fixed_price
+                        current_token_price,
+                        fixed_gas_price
                     )
                     .as_bytes(),
                 )

@@ -2,7 +2,7 @@ use std::f64;
 use std::fs::File;
 use std::io::prelude::*;
 
-static N_DAY: u64 = 40;
+static N_DAY: u64 = 700;
 static BLOCKS_IN_DAY: u64 = 144;
 
 fn profile(i_: u64) -> u64 {
