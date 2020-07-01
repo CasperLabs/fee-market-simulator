@@ -128,9 +128,11 @@ impl FeeMarketSimulator {
                 None => wtp_vec.iter().filter(|&&x| x >= fixed_gas_price).count() as u64,
             };
 
-            let txs = iter::repeat(Transaction::new(self.tx_gas_used, fixed_gas_price))
-                .take(n_sent_tx as usize)
-                .collect();
+            // let txs = iter::repeat(Transaction::new(self.tx_gas_used, fixed_gas_price))
+            //     .take(n_sent_tx as usize)
+            //     .collect();
+
+            let txs = (0..n_sent_tx).map(|x| Transaction::new(self.tx_gas_used, fixed_gas_price)).collect();
 
             self.txpool.add_txs(txs);
 
